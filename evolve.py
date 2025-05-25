@@ -5,7 +5,7 @@ import random
 import os
 
 class GamePair:
-    def __init__(self, rows, columns, NN1: nn.game_NN, NN2: nn.game_NN):
+    def __init__(self, rows, columns, NN1: nn.game_NN | nn.fake_NN, NN2: nn.game_NN | nn.fake_NN):
         self.game = game.Game(rows, columns)
         self.NN1 = NN1.copy()
         self.NN2 = NN2.copy()
@@ -47,7 +47,7 @@ class Batch:
         self.pairs = []
         self.num_pair = []
     
-    def play(self, iterations=5):
+    def play(self, iterations=5, include_fake_nn=False):
         for ii in range(iterations):
             print(f"\tIteration {ii+1}/{iterations}")
             self.pairs: list[GamePair] = []
@@ -58,11 +58,23 @@ class Batch:
             while (len(rng) > 1):
                 p1 = random.choice(rng)
                 rng.remove(p1)
-                p2 = random.choice(rng)
-                rng.remove(p2)
+                n1 = self.nets[p1]
+                if include_fake_nn:
+                    p2 = -1
+                    l = list(range(self.columns))
+                    random.shuffle(l)
+                    n2 = nn.fake_NN(l)
+                else:
+                    p2 = random.choice(rng)
+                    rng.remove(p2)
+                    n2 = self.nets[p2]
+                    
+                if random.randint(0,1)==1:
+                    n1, n2 = n2, n1
+                    p1, p2 = p2, p1
                 self.num_pairs.append((p1, p2))
                 self.pairs.append(GamePair(
-                    self.rows, self.columns, self.nets[p1], self.nets[p2]
+                    self.rows, self.columns, n1, n2
                 ))
             
             stopflag = False
@@ -88,21 +100,21 @@ class Batch:
                 gp = self.pairs[i]
 
                 if (gp.game.winner == -1): # nobody won
-                    self.results[p1] += 0.5 - 1/gp.game.number_of_turns
-                    self.results[p2] += 0.5 - 1/gp.game.number_of_turns
+                    if (p1!=-1): self.results[p1] += 0.5 - 1/gp.game.number_of_turns
+                    if (p2!=-1): self.results[p2] += 0.5 - 1/gp.game.number_of_turns
                 elif (gp.game.winner == 0): # P1 won
-                    self.results[p1] += 1 + 1/gp.game.number_of_turns
-                    self.results[p2] += - 1/gp.game.number_of_turns
+                    if (p1!=-1): self.results[p1] += 1 + 1/gp.game.number_of_turns
+                    if (p2!=-1): self.results[p2] += - 1/gp.game.number_of_turns
                 elif (gp.game.winner == 1): # P2 won
-                    self.results[p1] += - 1/gp.game.number_of_turns
-                    self.results[p2] += 1 + 1/gp.game.number_of_turns
+                    if (p1!=-1): self.results[p1] += - 1/gp.game.number_of_turns
+                    if (p2!=-1): self.results[p2] += 1 + 1/gp.game.number_of_turns
         
         for i in range(len(self.results)):
             self.results[i] = self.results[i]/iterations
     
     def save(self, directory):
         if (os.path.exists(directory)):
-            os.rmdir(directory)
+            os.remove(directory)
         os.mkdir(directory)
         
         if directory[-1] != '\\' and directory[-1] != '/':
@@ -191,17 +203,30 @@ def next_step(b: Batch, best_k:float=0.3, random_k:float=0.3, inner_mix_k:float=
 
 
 
-def evolve(start_batch: Batch, epochs: int, **kwargs) -> Batch:
+def evolve(start_batch: Batch, epochs: int, iterations:int, **kwargs) -> Batch:
     batch = start_batch
     
     for i in range(epochs):
         print(f"Epoch {i+1}/{epochs}")
-        batch.play()
+        batch.play(iterations, include_fake_nn=False)
         if (i != epochs-1):
             batch = next_step(batch, **kwargs)
         
     return batch
 
+def evolve_with_fake(start_batch: Batch, epochs: int, iterations:int, fake_delim:int, **kwargs) -> Batch:
+    batch = start_batch
+    
+    for i in range(epochs):
+        print(f"Epoch {i+1}/{epochs}")
+        if (i%fake_delim - fake_delim//2 < 0): batch.play(iterations, include_fake_nn=True)
+        else: batch.play(iterations, include_fake_nn=False)
+        if ((i+1)%10 == 0): batch.save(f"temp_epoch_{i+1}")
+        # if (os.path.exists(f"temp_epoch_{i-1}")): os.remove(f"temp_epoch_{i-1}")
+        if (i != epochs-1):
+            batch = next_step(batch, **kwargs)
+        
+    return batch
 
 def random_batch(rows: int, columns: int, size:int, *args, **kwargs) -> Batch:
     NNs: list[nn.game_NN] = []

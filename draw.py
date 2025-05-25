@@ -18,7 +18,7 @@ game = Game(6, 7)
 game_surf = pygame.Surface((WIN_X, WIN_Y), pygame.SRCALPHA)
 game_surf_pos = (0,0)
 
-NN = nn.game_NN.load_from("epoch2/NN_6x7_i_1_R_111.keras")
+NN = nn.game_NN.load_from("epoch100/NN_6x7_i_4_R_109.keras")
 NN_turn = 1
 
 DefaultFont = pygame.font.Font(pygame.font.match_font('timesnewroman'), 44)

@@ -106,4 +106,12 @@ class game_NN:
         
         return [e[0] for e in zipped_result]
         
-        
+
+class fake_NN:
+    def __init__(self, l: list[int]):
+        self.l = l
+    def copy(self) -> fake_NN:
+        fnn = fake_NN(self.l.copy())
+        return fnn
+    def get_columns(self, gamemap: list[ list[int] ], rows, columns, mine: int, opponents: int) -> list[int]:
+        return self.l
