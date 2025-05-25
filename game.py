@@ -18,6 +18,7 @@ class Game:
         # 0 for P1
         # 1 for P2
         self.turn: int = startturn
+        self.number_of_turns: int = 0
         
         self.ended: bool = False
         
@@ -147,4 +148,6 @@ class Game:
             return False
         
         self.turn = (self.turn+1)%2
+        self.number_of_turns += 1
+        
         return True
