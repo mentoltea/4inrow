@@ -191,14 +191,14 @@ def next_step(b: Batch, best_k:float=0.3, random_k:float=0.3, inner_mix_k:float=
 
 
 
-def evolve(start_batch: Batch, epochs: int) -> Batch:
+def evolve(start_batch: Batch, epochs: int, **kwargs) -> Batch:
     batch = start_batch
     
     for i in range(epochs):
         print(f"Epoch {i+1}/{epochs}")
         batch.play()
         if (i != epochs-1):
-            batch = next_step(batch)
+            batch = next_step(batch, **kwargs)
         
     return batch
 
