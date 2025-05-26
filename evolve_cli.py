@@ -6,7 +6,7 @@ import argparse
 def main(input_dir: str|None, output_dir:str|None, batchsize:int, epochs:int, iterations:int, fake_delim:int, rows:int=6, columns:int=7):
     # elevate()
     if (input_dir==None):
-        b = evolve.random_batch(6, 7, batchsize)
+        b = evolve.random_batch(6, 7, batchsize, inner_layers=[63, 32, 16])
     else:
         b = evolve.Batch.load(rows, columns, input_dir)
     
