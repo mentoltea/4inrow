@@ -132,6 +132,8 @@ class Game:
     # True -> ok
     # False -> move is illegal
     def move(self, column:int) -> bool:
+        if (self.ended): return False
+        
         fill = CellEnum.FILLED_P1.value
         if (self.turn == 1):
             fill = CellEnum.FILLED_P2.value

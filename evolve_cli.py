@@ -12,7 +12,7 @@ def main(input_dir: str|None, output_dir:str|None, batchsize:int, epochs:int, it
     
     if (output_dir==None): output_dir=f"epoch{epochs}/"
     
-    b = evolve.evolve_with_fake(b, epochs, iterations, fake_delim, random_factor=0.06)
+    b = evolve.evolve_with_fake(b, epochs, iterations, fake_delim, best_k=0.4, random_k=0.01, inner_mix_k=0.8, random_factor=0.07)
     b.save(output_dir)
     
 
