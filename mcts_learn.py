@@ -88,7 +88,7 @@ def load_data(dirname:str) -> list[tuple[np.ndarray, np.ndarray]]:
 def train_model(model_orig: keras.Model, data: list[tuple[np.ndarray, np.ndarray]],
                 training_koef:float=0.7,
                 optimizer:keras.optimizers.Optimizer = keras.optimizers.Adam(learning_rate=0.01),
-                loss:keras.losses.Loss = keras.losses.CategoricalCrossentropy(),
+                loss:keras.losses.Loss = keras.losses.MeanSquaredError(),
                 **kwargs) -> keras.Model:
     model = keras.models.clone_model(model_orig)
     model.set_weights(model_orig.get_weights())
@@ -131,7 +131,7 @@ g = Game.Game()
 g.gamemap = data[0][0]
 print(NN.get_columns(g, 1))
 
-mod = train_model(NN.model, data, verbose=0, batch_size=1, epochs=500)
+mod = train_model(NN.model, data, verbose=0, batch_size=2, epochs=200)
 NN.model = mod
 
 print(NN.get_columns(g, 1))

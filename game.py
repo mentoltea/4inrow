@@ -196,4 +196,15 @@ class Game:
         for x in range(self.columns):
             print(x, end=" ")
         print("\n")
-        
+    
+    def __eq__(self, other: Game) -> bool:
+        if isinstance(other, self.__class__):
+            if self.rows!=other.rows: return False
+            if self.columns!=other.columns: return False
+            if self.number_of_turns != other.number_of_turns: return False
+            if self.turn != other.turn: return False
+            if (self.gamemap != other.gamemap): return False
+            
+            return True
+        else:
+            return False
