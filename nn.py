@@ -67,7 +67,7 @@ class game_NN:
     def predict(self, *args, **kwargs):
         return self.model.predict(*args, **kwargs)
     
-    def get_columns(self, gamemap: list[ list[int] ], rows, columns, mine: int, opponents: int) -> list[int]:
+    def get_columns(self, gamemap: list[ list[int] ], rows, columns, mine: int, opponents: int) -> tuple[list[int], list[tuple[int,float]]]:
         # config = self.model.get_config()
         # shape = config["layers"][0]["config"]["batch_shape"]
         # shape = tuple(filter(None, list(shape))) # (columns, rows)
@@ -104,7 +104,7 @@ class game_NN:
         zipped_result.sort(key = lambda e: e[1], reverse=True)
         # print(zipped_result)
         
-        return [e[0] for e in zipped_result]
+        return ([e[0] for e in zipped_result], zipped_result)
         
 
 class fake_NN:

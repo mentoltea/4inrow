@@ -1,9 +1,10 @@
 import enum
+import numpy
 
 class CellEnum(enum.Enum):
     EMPTY = 0
     FILLED_P1 = 1
-    FILLED_P2 = 2
+    FILLED_P2 = -1
 
 class Game:
     def __init__(self, rows:int = 6, columns: int = 7, startturn: int = 0):
@@ -13,7 +14,8 @@ class Game:
         
         self.lastmove_xy: tuple[int,int] = (0,0)
 
-        self.gamemap: list[ list[int] ] = [ [ CellEnum.EMPTY.value for _ in range(columns)] for _ in range(rows)]
+        # self.gamemap: list[ list[int] ] = [ [ CellEnum.EMPTY.value for _ in range(columns)] for _ in range(rows)]
+        self.gamemap = numpy.zeros((rows, columns), dtype=int)
         
         # 0 for P1
         # 1 for P2
@@ -110,9 +112,9 @@ class Game:
         
         return False
     
-    # -1 - no win
-    # 0 - P1 won
-    # 1 - P2 won
+    # 1 - P1 won
+    # -1 - P2 won
+    # 0 - no win
     # is based on the last move
     def check_win(self) -> int:
         # print(self.lastmove_xy)
@@ -122,11 +124,11 @@ class Game:
         
         self.ended = True
         if (self.gamemap[self.lastmove_xy[1]][self.lastmove_xy[0]] == CellEnum.FILLED_P1.value):
-            self.winner = 0
-            return 0
+            self.winner = CellEnum.FILLED_P1.value
+            return CellEnum.FILLED_P1.value
         else:
-            self.winner = 1
-            return 1
+            self.winner = CellEnum.FILLED_P2.value
+            return CellEnum.FILLED_P2.value
             
     
     # True -> ok

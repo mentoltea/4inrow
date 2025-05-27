@@ -18,7 +18,8 @@ game = Game(6, 7)
 game_surf = pygame.Surface((WIN_X, WIN_Y), pygame.SRCALPHA)
 game_surf_pos = (0,0)
 
-NN = nn.game_NN.load_from("temp_epoch_90/NN_6x7_i_0_R_100.keras")
+NN = None
+# NN = nn.game_NN.load_from("26_27/temp_epoch_60/NN_6x7_i_25_R_94.keras")
 NN_turn = 1
 
 DefaultFont = pygame.font.Font(pygame.font.match_font('timesnewroman'), 44)
@@ -76,9 +77,9 @@ def draw_game(game: Game, surf: pygame.Surface):
     
     if game.ended:
         text = "Game ended"
-        if game.winner == 0:
+        if game.winner == GM.CellEnum.FILLED_P1.value:
             text = "Player 1 won"
-        elif game.winner == 1:
+        elif game.winner == GM.CellEnum.FILLED_P2.value:
             text = "Player 2 won"
         
         (text_size_x, text_size_y) = DefaultFont.size(text)
@@ -137,7 +138,8 @@ while RUN:
                 GAME_ENDED = False # type: ignore
                 continue
             
-            if (game.turn == NN_turn): continue
+            if (NN != None):
+                if (game.turn == NN_turn): continue
             
             (status, coord) = click_inside_game(game, game_surf, mouse_posrel)
             
@@ -154,23 +156,26 @@ while RUN:
         game = Game()
         GAME_ENDED = False # type: ignore
 
-    if (game.turn == NN_turn):
-        players = 0
-        nns = 0
-        if (NN_turn == 0):
-            nns = GM.CellEnum.FILLED_P1.value
-            players = GM.CellEnum.FILLED_P2.value
-        else:
-            nns = GM.CellEnum.FILLED_P2.value
-            players = GM.CellEnum.FILLED_P1.value
-        columns = NN.get_columns(game.gamemap, game.rows, game.columns, nns, players) # type: ignore
-        for c in columns:
-            if game.move(c):
-                break
-        if (game.check_win() > -1):
-            GAME_ENDED = True # type: ignore
-        if (not game.are_empty_cells()):
-            GAME_ENDED = True # type: ignore
+    if (NN != None):
+        if (game.turn == NN_turn):
+            players = 0
+            nns = 0
+            if (NN_turn == 0):
+                nns = GM.CellEnum.FILLED_P1.value
+                players = GM.CellEnum.FILLED_P2.value
+            else:
+                nns = GM.CellEnum.FILLED_P2.value
+                players = GM.CellEnum.FILLED_P1.value
+            (columns, zipped) = NN.get_columns(game.gamemap, game.rows, game.columns, nns, players) # type: ignore
+            print(zipped)
+            for c in columns:
+                if game.move(c):
+                    break
+            if (game.check_win() > -1):
+                GAME_ENDED = True # type: ignore
+            if (not game.are_empty_cells()):
+                GAME_ENDED = True # type: ignore
+    
         
     
     draw_game(game, game_surf)
