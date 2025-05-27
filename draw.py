@@ -20,7 +20,7 @@ game_surf_pos = (0,0)
 
 NN = None
 # NN = nn.game_NN.load_from("26_27/temp_epoch_60/NN_6x7_i_25_R_94.keras")
-NN_turn = 1
+NN_turn = GM.CellEnum.FILLED_P2.value
 
 DefaultFont = pygame.font.Font(pygame.font.match_font('timesnewroman'), 44)
 def draw_text(text: str, x: float, y: float, surf: pygame.Surface, font: pygame.font.Font = DefaultFont, color:tuple[int,int,int]=(0,0,0)):
@@ -144,7 +144,7 @@ while RUN:
             (status, coord) = click_inside_game(game, game_surf, mouse_posrel)
             
             if (status):
-                if (game.move(coord[0])):
+                if (game.move(coord[0], verbose=False)):
                     if (game.check_win() > -1):
                         GAME_ENDED = True # type: ignore
                     if (not game.are_empty_cells()):

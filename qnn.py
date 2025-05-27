@@ -21,7 +21,7 @@ class game_qNN:
         if output_activation==None:
             output_activation = keras.activations.tanh
         
-        input_layer = keras.layers.Input(shape=tuple([columns*rows]))
+        input_layer = keras.layers.Input(shape=tuple((rows, columns)))
         flatten_layer = keras.layers.Flatten()(input_layer)
         hidden_layer = flatten_layer
         for n in inner_layers:
@@ -51,28 +51,8 @@ class game_qNN:
     def predict(self, *args, **kwargs):
         return self.model.predict(*args, **kwargs)
     
-    def get_columns(self, gamemap: list[ list[int] ], rows, columns, mine: int, opponents: int) -> tuple[list[int], list[tuple[int,float]]]:
-        # config = self.model.get_config()
-        # shape = config["layers"][0]["config"]["batch_shape"]
-        # shape = tuple(filter(None, list(shape))) # (columns, rows)
-        
-        # nn_input = np.zeros((columns*rows))
-        nn_input = [0.0 for _ in range(columns*rows)]
-        
-        for y in range(rows):
-            for x in range(columns):
-                v = gamemap[y][x]
-                set_v = 0
-                if v==mine:
-                    set_v = 1
-                    # print("mine")
-                elif v==opponents:
-                    set_v = -1
-                    # print("opponents")
-                nn_input[x + y*columns] = float(set_v)
-        
-        nn_input = np.array([nn_input])
-        # nn_input =  [nn_input]
+    def get_columns(self, gm: game.Game, my_turn: int) -> tuple[list[int], list[tuple[int,float]]]:
+        nn_input = np.array([gm.gamemap*my_turn], dtype=np.float64)
         
         raw_result = self.model.predict(nn_input, verbose=0) # type: ignore
         # print(raw_result)

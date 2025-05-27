@@ -1,6 +1,7 @@
 from __future__ import annotations
 import enum
 import numpy
+import random
 
 class CellEnum(enum.Enum):
     EMPTY = 0
@@ -8,7 +9,7 @@ class CellEnum(enum.Enum):
     FILLED_P2 = -1
 
 class Game:
-    def __init__(self, rows:int = 6, columns: int = 7, startturn: int = 0):
+    def __init__(self, rows:int = 6, columns: int = 7, startturn: int = 1):
         # matrix[y][x]
         self.rows = rows
         self.columns = columns
@@ -18,8 +19,8 @@ class Game:
         # self.gamemap: list[ list[int] ] = [ [ CellEnum.EMPTY.value for _ in range(columns)] for _ in range(rows)]
         self.gamemap = numpy.zeros((rows, columns), dtype=int)
         
-        # 0 for P1
-        # 1 for P2
+        # 1 for P1
+        # -1 for P2
         self.turn: int = startturn
         self.number_of_turns: int = 0
         
@@ -142,12 +143,13 @@ class Game:
     
     # True -> ok
     # False -> move is illegal
-    def move(self, column:int) -> bool:
+    def move(self, column:int, verbose=False) -> bool:
         if (self.ended): return False
         
-        fill = CellEnum.FILLED_P1.value
-        if (self.turn == 1):
-            fill = CellEnum.FILLED_P2.value
+        # fill = CellEnum.FILLED_P1.value
+        # if (self.turn == 1):
+        #     fill = CellEnum.FILLED_P2.value
+        fill = self.turn
         
         found_empty = False
         for y in range(self.rows - 1, -1, -1):
@@ -160,7 +162,38 @@ class Game:
         if (not found_empty):
             return False
         
-        self.turn = (self.turn+1)%2
+        self.turn = self.turn*(-1)
         self.number_of_turns += 1
         
+        if (verbose):
+            print(self.gamemap)
+        
+        self.check_win()
         return True
+
+    def random_moves(self, n: int):
+        for m in range(n):
+            flag = True
+            while (flag):
+                c = random.randint(0, self.columns-1)
+                flag = not self.move(c)
+                if self.ended:
+                    return
+    
+    def print(self):
+        # print(self.gamemap)
+        for y in range(self.rows):
+            for x in range(self.columns):
+                ref = self.gamemap[y][x]
+                fill = '-'
+                if ref==CellEnum.FILLED_P1.value:
+                    fill = 'X'
+                elif ref==CellEnum.FILLED_P2.value:
+                    fill = 'O'
+                
+                print(fill, end=" ")
+            print("\n", end="")
+        for x in range(self.columns):
+            print(x, end=" ")
+        print("\n")
+        
