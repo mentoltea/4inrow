@@ -1,3 +1,4 @@
+from __future__ import annotations
 import enum
 import numpy
 
@@ -27,8 +28,16 @@ class Game:
         # -1 - nobody
         # 0 - P1
         # 1 - P2
-        self.winner = -1
+        self.winner = 0
     
+    def copy(self) -> Game:
+        gm = Game(self.rows, self.columns, self.turn)
+        gm.gamemap = self.gamemap.copy()
+        gm.number_of_turns = self.number_of_turns
+        gm.lastmove_xy = self.lastmove_xy
+        gm.ended = self.ended
+        gm.winner = self.winner
+        return gm
     
     def are_empty_cells(self) -> bool:
         for x in range(self.columns):
