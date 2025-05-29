@@ -1,16 +1,11 @@
-import game as Game
-import mcts
-import qnn
-import random
+import game
 import numpy as np
-import math
-import os
+import random
+import Q
+import Q_nn
 import tensorflow
 import keras
-
-# NN = qnn.game_qNN.new(6, 7)
-# epochs = 10
-
+import os
 
 def generate_data(N: int, min_moves: int, max_moves: int, depth:int=6, verbose=False) -> list[tuple[np.ndarray, np.ndarray]]:
     data: list[tuple[np.ndarray, np.ndarray]] = []
@@ -19,43 +14,29 @@ def generate_data(N: int, min_moves: int, max_moves: int, depth:int=6, verbose=F
     for n in range(N):
         if verbose: print(f"\tPair {n+1}/{N}")
         
-        gm = Game.Game(6,7)
+        gm = game.Game(6,7)
         flag = True
         while flag:
             m = random.randint(min_moves, max_moves)
             gm.random_moves(m)
             if (gm.ended):
-                gm = Game.Game(6,7)
+                gm = game.Game(6,7)
             else:
                 flag = False
-        # gm.print()
+        if verbose: gm.print()
         if verbose: print(f"\t\tGame generated")
         
-        # (nn_moves, stat) = NN.get_columns(gm, gm.turn)
-        # stat.sort(key=lambda t: t[0])
-        # stat = list(map(lambda t: t[1], stat))
-        # print(f"Output:  {stat}")
+        turn = gm.turn
         
-        expected: list[float] = []
-        for m in range(gm.columns):
-            pos = gm.copy()
-            v = 0
-            if (pos.move(m)):
-                game_loss = mcts.loss(pos, gm.turn, depth)
-                v = 2*math.exp(3/2*(-game_loss)) - 1
-            else:
-                v = 0
-            expected.append(v)
-        # print(f"Expected:  {expected}")
-        if verbose: print(f"\t\tExpected output generated")
+        Q_value: float = Q.Q(gm, turn, depth_search=depth)
+        if verbose: print(f"\t\tQ_value: {Q_value}")
         
-        nn_input = np.array(gm.gamemap, dtype=np.float64)
-        expected_output = np.array(expected, dtype=np.float64)
+        nn_input = np.array(gm.gamemap*turn, dtype=np.float64)
+        expected_output = np.array(Q_value, dtype=np.float64)
         
         data.append( (nn_input, expected_output) )
     
     return data
-
 
 def save_data(dirname:str , data: list[tuple[np.ndarray, np.ndarray]]):
     if dirname[-1]!='/' and dirname[-1]!='\\':
@@ -122,17 +103,17 @@ def train_model(model_orig: keras.Model, data: list[tuple[np.ndarray, np.ndarray
     
     return model
 
+NN = Q_nn.game_Q_NN.new(6, 7, inner_layers=[48, 32, 16, 7])
+mod = NN.model
+mod.summary()
 
-NN = qnn.game_qNN.new(6, 7, inner_layers=[63, 32, 16])
-data = generate_data(100, 13, 17, depth=3, verbose=True)
-# save_data('data', data)
-# data = load_data('data')
-g = Game.Game()
-g.gamemap = data[0][0]
-print(NN.get_columns(g, 1))
+# data = generate_data(10, 2, 7, depth=4, verbose=True)
+# save_data('data3/', data)
+data = load_data('data3/')
 
-mod = train_model(NN.model, data, loss=keras.losses.Poisson(), verbose=0, batch_size=2, epochs=200)
+mod = train_model(mod, data,
+            training_koef=0.85,
+            optimizer='Adam', # type: ignore
+            loss=keras.losses.MeanSquaredError())
+
 NN.model = mod
-
-print(NN.get_columns(g, 1))
-print(sorted(enumerate(data[0][1]), key=lambda t:t[0], reverse=True))
