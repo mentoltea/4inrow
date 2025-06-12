@@ -47,7 +47,7 @@ class game_Q_NN:
     @staticmethod
     def load_from(filename) -> game_Q_NN:
         model = keras.models.load_model(filename)
-        NN = game_qNN(model) # type: ignore
+        NN = game_Q_NN(model) # type: ignore
         return NN
     
     def predict(self, *args, **kwargs):

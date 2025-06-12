@@ -3,6 +3,7 @@ import game as GM
 from game import Game
 import nn
 import qnn
+import Q_nn
 
 pygame.init()
 
@@ -21,7 +22,7 @@ game_surf_pos = (0,0)
 
 # NN = None
 # NN = nn.game_NN.load_from("26_27/temp_epoch_60/NN_6x7_i_25_R_94.keras")
-NN = qnn.game_qNN.load_from("NN2/NN_teach_Hinge.keras")
+NN = Q_nn.game_Q_NN.load_from("NN3/MSE.keras")
 NN_turn = GM.CellEnum.FILLED_P2.value
 
 DefaultFont = pygame.font.Font(pygame.font.match_font('timesnewroman'), 44)
@@ -169,7 +170,7 @@ while RUN:
                 nns = GM.CellEnum.FILLED_P2.value
                 players = GM.CellEnum.FILLED_P1.value
             (columns, zipped) = NN.get_columns(game, nns) # type: ignore
-            print(zipped)
+            # print(zipped)
             for c in columns:
                 if game.move(c):
                     break

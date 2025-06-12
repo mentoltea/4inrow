@@ -16,14 +16,16 @@ def generate_data(N: int, min_moves: int, max_moves: int, depth:int=6, verbose=F
         
         gm = game.Game(6,7)
         flag = True
+        m = random.randint(min_moves, max_moves)
         while flag:
-            m = random.randint(min_moves, max_moves)
             gm.random_moves(m)
             if (gm.ended):
-                gm = game.Game(6,7)
+                # gm = game.Game(6,7)
+                flag = False
             else:
                 flag = False
-        if verbose: gm.print()
+        if verbose:
+            gm.print()
         if verbose: print(f"\t\tGame generated")
         
         turn = gm.turn
@@ -103,17 +105,68 @@ def train_model(model_orig: keras.Model, data: list[tuple[np.ndarray, np.ndarray
     
     return model
 
-NN = Q_nn.game_Q_NN.new(6, 7, inner_layers=[48, 32, 16, 7])
-mod = NN.model
-mod.summary()
+if 1:
+    data = []
+    savedir = "data3/" + "Q_2_"
+    n = 500
+    d = 5
+    i = 0
+    flag = True
+    while flag:
+        print(f"\n\nGenerated {i*n} samples\n")
+        try:
+            newdata = generate_data(n, 1, 28, depth=d, verbose=True)
+            data += newdata
+        except:
+            flag = False
+            break
+        i += 1
 
-# data = generate_data(10, 2, 7, depth=4, verbose=True)
-# save_data('data3/', data)
-data = load_data('data3/')
+    if (len(data)>0):
+        savedir += str(len(data))
+        print(f"Saving {len(data)} samples to {savedir}")
+        save_data(savedir, data)
+else:
+    NN = Q_nn.game_Q_NN.new(6, 7, inner_layers=[48, 32, 16, 7])
+    mod = NN.model
+    mod.summary()
 
-mod = train_model(mod, data,
-            training_koef=0.85,
-            optimizer='Adam', # type: ignore
-            loss=keras.losses.MeanSquaredError())
+    modMAE = mod
+    modMSE = mod
+     
+    data = load_data('data3/Q_117000/')
 
-NN.model = mod
+    batch_size = 64
+    epochs = 100
+
+    N = 25
+    for I in range(N):
+        print(f"Iteration {I+1}/{N}")
+        try:
+            random.shuffle(data)
+            print("MAE:")
+            modMAE = train_model(
+                modMAE, data,
+                training_koef=0.85,
+                optimizer='Adam', # type: ignore
+                loss=keras.losses.MeanAbsoluteError(),
+                batch_size=batch_size,
+                epochs=epochs
+            )
+            print("MSE:")
+            modMSE = train_model(
+                modMSE, data,
+                training_koef=0.85,
+                optimizer='Adam', # type: ignore
+                loss=keras.losses.MeanSquaredError(),
+                batch_size=batch_size,
+                epochs=epochs
+            )
+        except:
+            break
+    print("Saving...")
+    NN.model = modMAE
+    NN.save("NN3/MAE.keras")
+
+    NN.model = modMSE
+    NN.save("NN3/MSE.keras")
