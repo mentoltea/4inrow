@@ -17,3 +17,18 @@ def classify(prob: float) -> float:
     prob *= 1.5
     res = round(prob)
     return res
+
+
+class Q_based_opponent:
+    def __init__(self, depth=6) -> None:
+        self.depth = depth
+    
+    def get_move(self, gm: game.Game) -> int:
+        moves: list[tuple[int,float]] = []
+        for m in range(gm.columns):
+            copy = gm.copy()
+            if copy.move(m):
+                moves.append( (m, Q(copy, gm.turn, self.depth)) )
+        moves.sort(key=lambda t: t[1], reverse=True)
+        return moves[0][0]
+            
