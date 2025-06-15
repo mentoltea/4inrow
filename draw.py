@@ -22,7 +22,7 @@ game_surf_pos = (0,0)
 
 # NN = None
 # NN = nn.game_NN.load_from("26_27/temp_epoch_60/NN_6x7_i_25_R_94.keras")
-NN = Q_nn.game_Q_NN.load_from("NN4/Conv2D_Qlearning_MSE.keras")
+NN = Q_nn.game_Q_NN.load_from("NN4/Conv2D_Q_MSE_5.keras")
 NN_turn = GM.CellEnum.FILLED_P2.value
 
 DefaultFont = pygame.font.Font(pygame.font.match_font('timesnewroman'), 44)

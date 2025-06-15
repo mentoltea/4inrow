@@ -1,6 +1,7 @@
 from __future__ import annotations
 import game
 import numpy as np
+import random
 import tensorflow
 import keras
 
@@ -74,3 +75,9 @@ class game_conv_NN:
         res.sort(key = lambda e: e[1], reverse=True)
         
         return ([e[0] for e in res], res)
+
+    def get_move(self, gm: game.Game) -> int:
+        moves = self.get_columns(gm, gm.turn)[0]
+        if (len(moves) == 0):
+            return random.randint(0, gm.columns-1)
+        return moves[0]
